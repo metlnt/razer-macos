@@ -13,7 +13,7 @@ struct NagaControlApp: App {
     }
 
     var body: some Scene {
-        WindowGroup("Naga Control") {
+        WindowGroup("Razer Control") {
             ContentView()
                 .environmentObject(store)
                 .frame(minWidth: 960, minHeight: 600)

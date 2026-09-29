@@ -1,9 +1,9 @@
 #!/bin/zsh
-# Builds NagaControl.app into ./build
+# Builds RazerControl.app into ./build
 set -euo pipefail
 cd "$(dirname "$0")"
 swift build -c release --package-path NagaControl
-APP=build/NagaControl.app
+APP=build/RazerControl.app
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp NagaControl/.build/release/NagaControl "$APP/Contents/MacOS/"
@@ -23,8 +23,9 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-  <key>CFBundleName</key><string>Naga Control</string>
-  <key>CFBundleIdentifier</key><string>local.nagacontrol</string>
+  <key>CFBundleName</key><string>Razer Control</string>
+  <key>CFBundleDisplayName</key><string>Razer Control</string>
+  <key>CFBundleIdentifier</key><string>local.razercontrol</string>
   <key>CFBundleExecutable</key><string>NagaControl</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>

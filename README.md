@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="NagaControl/Icon/icon-1024.png" width="128" alt="Naga Control icon">
+  <img src="NagaControl/Icon/icon-1024.png" width="128" alt="Razer Control icon">
 </p>
 
-<h1 align="center">Naga Control</h1>
+<h1 align="center">Razer Control</h1>
 
 <p align="center">
-  A native macOS app to configure the <b>Razer Naga Trinity</b> — no Razer Synapse required.
+  An unofficial native macOS app to configure the <b>Razer Naga Trinity</b> — no Razer Synapse required.
 </p>
 
 <p align="center">
@@ -25,7 +25,7 @@
 
 ## Why
 
-Razer Synapse doesn't support the Naga Trinity on macOS. Naga Control speaks the mouse's own protocol directly, so you can remap buttons, tune DPI and set up lighting on a Mac. Every setting is written to the mouse's **onboard memory**, so it keeps working on any computer, even when the app isn't running.
+Razer Synapse doesn't support the Naga Trinity on macOS. Razer Control speaks the mouse's own protocol directly, so you can remap buttons, tune DPI and set up lighting on a Mac. Every setting is written to the mouse's **onboard memory**, so it keeps working on any computer, even when the app isn't running.
 
 ## Features
 
@@ -65,10 +65,10 @@ There's no prebuilt release yet. Building takes about a minute.
 git clone git@github.com:metlnt/razer-macos.git
 cd razer-macos
 ./build-app.sh
-open build/NagaControl.app
+open build/RazerControl.app
 ```
 
-Then drag `build/NagaControl.app` into `/Applications` if you want to keep it.
+Then drag `build/RazerControl.app` into `/Applications` if you want to keep it.
 
 The app talks to the mouse through USB control requests (`IOUSBHost`), so it **doesn't need** Input Monitoring or Accessibility permissions.
 
