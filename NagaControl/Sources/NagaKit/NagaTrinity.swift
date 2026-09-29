@@ -258,6 +258,21 @@ public final class NagaTrinity {
         try request(0x0F, 0x04, size: 3, [store, zone.rawValue, v])
     }
 
+    /// Host-driven lighting: one color per zone in frame column order (wheel, logo, side panel).
+    /// Call `enableCustomFrame()` once, then stream frames.
+    public static let frameZones: [LEDZone] = [.scrollWheel, .logo, .sidePanel]
+
+    public func setCustomFrame(_ colors: [RGB]) throws {
+        let cols = colors.prefix(Self.frameZones.count)
+        var args: [UInt8] = [0, 0, 0, 0, UInt8(cols.count - 1)]
+        for c in cols { args += [c.r, c.g, c.b] }
+        try request(0x0F, 0x03, size: UInt8(args.count), args)
+    }
+
+    public func enableCustomFrame() throws {
+        try request(0x0F, 0x02, size: 0x0C, [Self.liveStore, 0x00, 0x08])
+    }
+
     // MARK: Buttons
 
     public func buttonIDs() throws -> [UInt8] {

@@ -31,14 +31,25 @@ final class DeviceStore: ObservableObject {
     @Published var toast: String?
     /// DPI actually in use right now (follows the mouse's DPI buttons).
     @Published var currentDPI: DPIStage?
+    @Published var animation = AnimationSettings.load() {
+        didSet { animationChanged(from: oldValue) }
+    }
+
+    static let shared = DeviceStore()
 
     private var device: NagaTrinity?
     private let monitor = DeviceMonitor()
     private let queue = DispatchQueue(label: "naga.hid")
     private var pending: [String: Task<Void, Never>] = [:]
     private var watcher: Task<Void, Never>?
+    private var animationTimer: Timer?
+    private var renderer = AnimationRenderer(settings: AnimationSettings())
+    private let cpu = CPUMonitor()
+    private var lastCPUSample = Date.distantPast
+    private var frameInFlight = false
+    private let animationStart = Date()
 
-    init() {
+    private init() {
         monitor.onChange = { [weak self] in self?.connect() }
         connect()
     }
@@ -63,6 +74,7 @@ final class DeviceStore: ObservableObject {
 
     func connect() {
         guard monitor.isConnected else {
+            stopAnimationTimer()
             device = nil
             currentDPI = nil
             status = .searching
@@ -101,6 +113,7 @@ final class DeviceStore: ObservableObject {
             }
             (info, polling, dpi, zones, mappings, currentDPI) = snap
             status = .ready
+            if animation.enabled { startAnimation() }
         } catch {
             status = .error(error.localizedDescription)
         }
@@ -170,6 +183,74 @@ final class DeviceStore: ObservableObject {
 
     func setAllZones(_ state: ZoneState) {
         for z in LEDZone.allCases { setZone(z, state) }
+    }
+
+    // MARK: Software animations
+
+    private func animationChanged(from old: AnimationSettings) {
+        animation.save()
+        renderer.settings = animation
+        guard status == .ready else { return }
+        if animation.enabled && !old.enabled {
+            startAnimation()
+        } else if !animation.enabled && old.enabled {
+            stopAnimation()
+        }
+    }
+
+    private func startAnimation() {
+        renderer.settings = animation
+        write("anim-start") { try $0.enableCustomFrame() }
+        guard animationTimer == nil else { return }
+        let timer = Timer(timeInterval: 1.0 / 30, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.renderFrame() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        animationTimer = timer
+    }
+
+    private func stopAnimationTimer() {
+        animationTimer?.invalidate()
+        animationTimer = nil
+    }
+
+    /// Stops streaming and puts the mouse's own effects back.
+    private func stopAnimation() {
+        stopAnimationTimer()
+        let zones = self.zones
+        write("anim-stop") { d in
+            for (z, st) in zones {
+                try d.setEffect(st.effect, zone: z, store: NagaTrinity.liveStore)
+                try d.setBrightness(UInt8(st.brightness.rounded()), zone: z, store: NagaTrinity.liveStore)
+            }
+        }
+    }
+
+    /// Called on quit: restores the mouse's own effects before the process exits.
+    func restoreLightingSync() {
+        guard animation.enabled, let device else { return }
+        stopAnimationTimer()
+        let zones = self.zones
+        queue.sync {
+            for (z, st) in zones {
+                try? device.setEffect(st.effect, zone: z, store: NagaTrinity.liveStore)
+                try? device.setBrightness(UInt8(st.brightness.rounded()), zone: z, store: NagaTrinity.liveStore)
+            }
+        }
+    }
+
+    private func renderFrame() {
+        guard let device, !frameInFlight else { return }  // drop frames instead of queueing them
+        if animation.kind == .cpu, Date().timeIntervalSince(lastCPUSample) > 0.5 {
+            renderer.cpuLoad = cpu.sample()
+            lastCPUSample = Date()
+        }
+        let colors = renderer.frame(at: Date().timeIntervalSince(animationStart), zones: NagaTrinity.frameZones.count)
+        frameInFlight = true
+        queue.async { [weak self] in
+            try? device.setCustomFrame(colors)
+            DispatchQueue.main.async { self?.frameInFlight = false }
+        }
     }
 
     // MARK: Buttons

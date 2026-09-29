@@ -183,21 +183,115 @@ extension RGB {
 struct LightingView: View {
     @EnvironmentObject var store: DeviceStore
     @AppStorage("syncZones") private var sync = true
+    @AppStorage("sidePlate") private var plateRaw = SidePlate.two.rawValue
+
+    /// The 2-button side plate has no LEDs, so its zone is hidden.
+    private var zones: [LEDZone] {
+        plateRaw == SidePlate.two.rawValue ? [.scrollWheel, .logo] : LEDZone.allCases
+    }
 
     var body: some View {
         Form {
             SwiftUI.Section {
-                Toggle("Same for all zones", isOn: $sync)
+                Picker("Mode", selection: $store.animation.enabled) {
+                    Text("Mouse effects").tag(false)
+                    Text("Animations").tag(true)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+            } footer: {
+                Text(store.animation.enabled
+                     ? "Animations are drawn by the app and run only while Razer Control is open. When you quit, the mouse returns to its own effect."
+                     : "Built into the mouse: they keep working without the app.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
-            if sync {
-                ZoneEditor(title: String(localized: "All zones"), state: store.zones[.logo] ?? ZoneState()) { store.setAllZones($0) }
+
+            if store.animation.enabled {
+                AnimationEditor(settings: $store.animation)
             } else {
-                ForEach(LEDZone.allCases) { z in
-                    ZoneEditor(title: z.title, state: store.zones[z] ?? ZoneState()) { store.setZone(z, $0) }
+                SwiftUI.Section {
+                    Toggle("Same for all zones", isOn: $sync)
+                }
+                if sync {
+                    ZoneEditor(title: String(localized: "All zones"), state: store.zones[.logo] ?? ZoneState()) { st in
+                        for z in zones { store.setZone(z, st) }
+                    }
+                } else {
+                    ForEach(zones) { z in
+                        ZoneEditor(title: z.title, state: store.zones[z] ?? ZoneState()) { store.setZone(z, $0) }
+                    }
                 }
             }
         }
         .formStyle(.grouped)
+    }
+}
+
+struct AnimationEditor: View {
+    @Binding var settings: AnimationSettings
+
+    var body: some View {
+        SwiftUI.Section("Animation") {
+            Picker("Effect", selection: $settings.kind) {
+                ForEach(AnimationKind.allCases) { Text($0.title).tag($0) }
+            }
+            LabeledContent("Speed") {
+                HStack {
+                    Slider(value: Binding(get: { log2(settings.speed) }, set: { settings.speed = pow(2, $0) }), in: -2...2)
+                    Text(verbatim: String(format: "%.2g×", settings.speed)).monospacedDigit().frame(width: 44, alignment: .trailing)
+                }
+            }
+            LabeledContent("Brightness") {
+                HStack {
+                    Slider(value: $settings.brightness, in: 0.05...1)
+                    Text(verbatim: "\(Int(settings.brightness * 100))%").monospacedDigit().frame(width: 44, alignment: .trailing)
+                }
+            }
+        }
+
+        if settings.kind.usesPalette {
+            SwiftUI.Section {
+                HStack(spacing: 10) {
+                    ForEach(settings.palette.indices, id: \.self) { i in
+                        ColorPicker("", selection: Binding(
+                            get: { settings.palette[i].color },
+                            set: { settings.palette[i] = RGB($0) }), supportsOpacity: false)
+                            .labelsHidden()
+                            .contextMenu {
+                                Button("Remove color", role: .destructive) { settings.palette.remove(at: i) }
+                                    .disabled(settings.palette.count <= 1)
+                            }
+                    }
+                    Button { settings.palette.append(settings.palette.last ?? RGB(255, 255, 255)) } label: {
+                        Image(systemName: "plus")
+                    }
+                    .disabled(settings.palette.count >= AnimationSettings.maxColors)
+                    .help("Add color")
+                    Button { settings.palette.removeLast() } label: { Image(systemName: "minus") }
+                        .disabled(settings.palette.count <= 1)
+                        .help("Remove last color")
+                    Spacer()
+                    Menu("Presets") {
+                        ForEach(PalettePreset.all) { p in
+                            Button(LocalizedStringKey(p.name)) { settings.palette = p.colors }
+                        }
+                    }
+                    .fixedSize()
+                }
+            } header: {
+                Text("Colors")
+            } footer: {
+                Text(paletteHint).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var paletteHint: LocalizedStringKey {
+        switch settings.kind {
+        case .fire: return "The first color is the flame, the second is the embers."
+        case .cpu: return "From idle (first color) to full load (last color)."
+        default: return "Up to 8 colors. Right-click a color to remove it."
+        }
     }
 }
 

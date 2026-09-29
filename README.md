@@ -45,6 +45,7 @@ Razer Synapse doesn't support the Naga Trinity on macOS. Razer Control speaks th
 - Three zones: scroll wheel, logo and side panel. Set them together or one by one
 - Static, breathing (single, dual or random colors), spectrum and reactive effects
 - Per-zone brightness
+- **Software animations** at adjustable speed, with palettes of up to 8 colors: breathing, color cycle, rainbow, wave, strobe, heartbeat, fire and CPU load. They run while the app is open.
 
 **🌍 Localized** into English, Русский, Українська, Deutsch, Español, Français and 简体中文
 
