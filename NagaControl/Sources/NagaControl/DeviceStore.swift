@@ -15,7 +15,7 @@ struct MappingKey: Hashable {
 enum SidePlate: Int, CaseIterable, Identifiable {
     case two = 2, seven = 7, twelve = 12
     var id: Int { rawValue }
-    var title: String { "\(rawValue) кн." }
+    var title: String { String(localized: "\(rawValue) buttons") }
 }
 
 @MainActor
@@ -79,7 +79,7 @@ final class DeviceStore: ObservableObject {
 
     /// Runs HID I/O off the main thread, serialized.
     private func io<T>(_ body: @escaping (NagaTrinity) throws -> T) async throws -> T {
-        guard let device else { throw RazerError.io("мышь не подключена") }
+        guard let device else { throw RazerError.io(String(localized: "mouse not connected")) }
         return try await withCheckedThrowingContinuation { cont in
             queue.async { cont.resume(with: Result { try body(device) }) }
         }
@@ -189,6 +189,6 @@ final class DeviceStore: ObservableObject {
         for key in mappings.keys {
             setAction(ButtonAction.factoryDefault(button: key.button, layer: key.layer), button: key.button, layer: key.layer)
         }
-        show("Все кнопки возвращены к заводским")
+        show(String(localized: "All buttons restored to factory defaults"))
     }
 }

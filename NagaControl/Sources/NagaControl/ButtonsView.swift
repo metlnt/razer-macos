@@ -12,31 +12,31 @@ enum ButtonCatalog {
         let side: [ButtonInfo]
         switch plate {
         case .two:
-            side = [ButtonInfo(id: ButtonID.side4, name: "Боковая задняя"),
-                    ButtonInfo(id: ButtonID.side5, name: "Боковая передняя")]
+            side = [ButtonInfo(id: ButtonID.side4, name: String(localized: "Rear side button")),
+                    ButtonInfo(id: ButtonID.side5, name: String(localized: "Front side button"))]
         case .seven:
-            side = ButtonID.plate7.enumerated().map { ButtonInfo(id: $1, name: "Боковая \($0 + 1)") }
+            side = ButtonID.plate7.enumerated().map { ButtonInfo(id: $1, name: String(localized: "Side \($0 + 1)")) }
         case .twelve:
-            side = ButtonID.plate12.enumerated().map { ButtonInfo(id: $1, name: "Боковая \($0 + 1)") }
+            side = ButtonID.plate12.enumerated().map { ButtonInfo(id: $1, name: String(localized: "Side \($0 + 1)")) }
         }
         return [
-            ("Основные", [
-                ButtonInfo(id: ButtonID.left, name: "Левая кнопка"),
-                ButtonInfo(id: ButtonID.right, name: "Правая кнопка"),
-                ButtonInfo(id: ButtonID.middle, name: "Нажатие колеса"),
+            (String(localized: "Main"), [
+                ButtonInfo(id: ButtonID.left, name: String(localized: "Left button")),
+                ButtonInfo(id: ButtonID.right, name: String(localized: "Right button")),
+                ButtonInfo(id: ButtonID.middle, name: String(localized: "Wheel click")),
             ]),
-            ("Колесо", [
-                ButtonInfo(id: ButtonID.wheelUp, name: "Прокрутка вверх"),
-                ButtonInfo(id: ButtonID.wheelDown, name: "Прокрутка вниз"),
-                ButtonInfo(id: ButtonID.tiltLeft, name: "Наклон влево"),
-                ButtonInfo(id: ButtonID.tiltRight, name: "Наклон вправо"),
+            (String(localized: "Wheel"), [
+                ButtonInfo(id: ButtonID.wheelUp, name: String(localized: "Scroll up")),
+                ButtonInfo(id: ButtonID.wheelDown, name: String(localized: "Scroll down")),
+                ButtonInfo(id: ButtonID.tiltLeft, name: String(localized: "Tilt left")),
+                ButtonInfo(id: ButtonID.tiltRight, name: String(localized: "Tilt right")),
             ]),
-            ("Верхние", [
-                ButtonInfo(id: ButtonID.dpiUp, name: "Кнопка DPI +"),
-                ButtonInfo(id: ButtonID.dpiDown, name: "Кнопка DPI −"),
+            (String(localized: "Top"), [
+                ButtonInfo(id: ButtonID.dpiUp, name: String(localized: "DPI + button")),
+                ButtonInfo(id: ButtonID.dpiDown, name: String(localized: "DPI − button")),
             ]),
-            ("Боковая панель (\(plate.title))", side),
-            ("Прочее", [ButtonInfo(id: ButtonID.extra, name: "Кнопка 0x0E")]),
+            (String(localized: "Side panel (\(plate.title))"), side),
+            (String(localized: "Other"), [ButtonInfo(id: ButtonID.extra, name: String(localized: "Button 0x0E"))]),
         ]
     }
 }
@@ -46,20 +46,37 @@ extension ButtonAction {
     static let browserForward = ButtonAction.keyboard(modifiers: HIDKeys.modCmd, key: 0x30)
 
     func title(for button: UInt8, layer: Layer) -> String {
-        if self == .factoryDefault(button: button, layer: layer), case .raw = self { return "Заводская функция" }
+        if self == .factoryDefault(button: button, layer: layer), case .raw = self { return String(localized: "Factory function") }
         switch self {
-        case .disabled: return "Отключено"
+        case .disabled: return String(localized: "Disabled")
         case .mouse(let b):
-            return [1: "Левый клик", 2: "Правый клик", 3: "Средний клик", 4: "Кнопка мыши 4 (назад)",
-                    5: "Кнопка мыши 5 (вперёд)", 9: "Прокрутка вверх", 10: "Прокрутка вниз"][Int(b)] ?? "Кнопка мыши \(b)"
+            switch b {
+            case 1: return String(localized: "Left click")
+            case 2: return String(localized: "Right click")
+            case 3: return String(localized: "Middle click")
+            case 4: return String(localized: "Mouse button 4 (back)")
+            case 5: return String(localized: "Mouse button 5 (forward)")
+            case 9: return String(localized: "Scroll up")
+            case 10: return String(localized: "Scroll down")
+            default: return String(localized: "Mouse button \(Int(b))")
+            }
         case .keyboard(let m, let k):
             let keys = HIDKeys.describe(modifiers: m, key: k)
-            if self == .browserBack { return "Назад в браузере (\(keys))" }
-            if self == .browserForward { return "Вперёд в браузере (\(keys))" }
-            return keys
+            switch (m, k) {
+            case (HIDKeys.modCmd, 0x2F): return String(localized: "Browser back (\(keys))")
+            case (HIDKeys.modCmd, 0x30): return String(localized: "Browser forward (\(keys))")
+            case (HIDKeys.modCmd, 0x06): return String(localized: "Copy (\(keys))")
+            case (HIDKeys.modCmd, 0x19): return String(localized: "Paste (\(keys))")
+            case (HIDKeys.modCmd, 0x1B): return String(localized: "Cut (\(keys))")
+            case (HIDKeys.modCmd, 0x17): return String(localized: "New tab (\(keys))")
+            case (HIDKeys.modCmd, 0x1A): return String(localized: "Close tab (\(keys))")
+            case (0, 0x2A): return String(localized: "Delete (\(keys))")
+            case (HIDKeys.modCtrl, 0x52): return "Mission Control (\(keys))"
+            default: return keys
+            }
         case .dpi(let d): return d == 1 ? "DPI +" : d == 2 ? "DPI −" : "DPI (\(d))"
         case .raw(let t, let p):
-            return String(format: "Код %02X: ", t) + p.map { String(format: "%02X", $0) }.joined(separator: " ")
+            return String(localized: "Code") + String(format: " %02X: ", t) + p.map { String(format: "%02X", $0) }.joined(separator: " ")
         }
     }
 }
@@ -76,17 +93,17 @@ struct ButtonsView: View {
         HStack(spacing: 0) {
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Picker("Слой", selection: $layer) {
-                        Text("Обычный").tag(Layer.normal)
+                    Picker("Layer", selection: $layer) {
+                        Text("Normal").tag(Layer.normal)
                         Text("Hypershift").tag(Layer.hypershift)
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()
-                    .help("Hypershift — второй слой назначений, пока зажата кнопка Hypershift")
-                    Picker("Боковая панель", selection: $plateRaw) {
+                    .help("Hypershift is a second layer of bindings, active while the Hypershift button is held")
+                    Picker("Side panel", selection: $plateRaw) {
                         ForEach(SidePlate.allCases) { Text($0.title).tag($0.rawValue) }
                     }
-                    .help("Какая боковая панель установлена")
+                    .help("Which side panel is installed")
                 }
                 .padding(12)
                 Divider()
@@ -98,7 +115,7 @@ struct ButtonsView: View {
                                     Text(b.name)
                                     Text(store.action(b.id, layer)?.title(for: b.id, layer: layer) ?? "—")
                                         .font(.caption)
-                                        .foregroundStyle(isFactory(b.id) ? Color.secondary : Color.accentColor)
+                                        .foregroundStyle(subtitleColor(b.id))
                                 }
                                 .padding(.vertical, 2)
                                 .tag(b.id)
@@ -115,11 +132,17 @@ struct ButtonsView: View {
                 if let id = selected, let info = ButtonCatalog.groups(plate: plate).flatMap(\.1).first(where: { $0.id == id }) {
                     ActionEditor(button: info, layer: layer)
                 } else {
-                    ContentUnavailableView("Выберите кнопку", systemImage: "cursorarrow.click")
+                    ContentUnavailableView("Select a button", systemImage: "cursorarrow.click")
                 }
             }
             .frame(minWidth: 420, maxWidth: .infinity, maxHeight: .infinity)
         }
+    }
+
+    /// Changed bindings are highlighted, except on the selected row where accent-on-accent is unreadable.
+    private func subtitleColor(_ id: UInt8) -> Color {
+        if id == selected { return .white.opacity(0.85) }
+        return isFactory(id) ? .secondary : .accentColor
     }
 
     private func isFactory(_ id: UInt8) -> Bool {
@@ -135,23 +158,25 @@ struct ActionEditor: View {
     private var current: ButtonAction? { store.action(button.id, layer) }
     private var factory: ButtonAction { .factoryDefault(button: button.id, layer: layer) }
 
-    private let presets: [(String, String, [(String, ButtonAction)])] = [
-        ("Браузер", "globe", [
-            ("Назад  ⌘[", .browserBack), ("Вперёд  ⌘]", .browserForward),
-            ("Кнопка мыши 4", .mouse(4)), ("Кнопка мыши 5", .mouse(5)),
+    private let presets: [(LocalizedStringKey, String, [(LocalizedStringKey, ButtonAction)])] = [
+        ("Browser", "globe", [
+            ("Back  ⌘[", .browserBack), ("Forward  ⌘]", .browserForward),
+            ("Mouse button 4", .mouse(4)), ("Mouse button 5", .mouse(5)),
         ]),
-        ("Мышь", "computermouse", [
-            ("Левый клик", .mouse(1)), ("Правый клик", .mouse(2)), ("Средний клик", .mouse(3)),
-            ("Прокрутка ↑", .mouse(9)), ("Прокрутка ↓", .mouse(10)),
+        ("Mouse", "computermouse", [
+            ("Left click", .mouse(1)), ("Right click", .mouse(2)), ("Middle click", .mouse(3)),
+            ("Scroll ↑", .mouse(9)), ("Scroll ↓", .mouse(10)),
         ]),
-        ("Система", "macwindow", [
+        ("System", "macwindow", [
             ("Mission Control  ⌃↑", .keyboard(modifiers: HIDKeys.modCtrl, key: 0x52)),
-            ("Стол слева  ⌃←", .keyboard(modifiers: HIDKeys.modCtrl, key: 0x50)),
-            ("Стол справа  ⌃→", .keyboard(modifiers: HIDKeys.modCtrl, key: 0x4F)),
-            ("Копировать  ⌘C", .keyboard(modifiers: HIDKeys.modCmd, key: 0x06)),
-            ("Вставить  ⌘V", .keyboard(modifiers: HIDKeys.modCmd, key: 0x19)),
-            ("Новая вкладка  ⌘T", .keyboard(modifiers: HIDKeys.modCmd, key: 0x17)),
-            ("Закрыть вкладку  ⌘W", .keyboard(modifiers: HIDKeys.modCmd, key: 0x1A)),
+            ("Space left  ⌃←", .keyboard(modifiers: HIDKeys.modCtrl, key: 0x50)),
+            ("Space right  ⌃→", .keyboard(modifiers: HIDKeys.modCtrl, key: 0x4F)),
+            ("Copy  ⌘C", .keyboard(modifiers: HIDKeys.modCmd, key: 0x06)),
+            ("Paste  ⌘V", .keyboard(modifiers: HIDKeys.modCmd, key: 0x19)),
+            ("Cut  ⌘X", .keyboard(modifiers: HIDKeys.modCmd, key: 0x1B)),
+            ("Delete  ⌫", .keyboard(modifiers: 0, key: 0x2A)),
+            ("New tab  ⌘T", .keyboard(modifiers: HIDKeys.modCmd, key: 0x17)),
+            ("Close tab  ⌘W", .keyboard(modifiers: HIDKeys.modCmd, key: 0x1A)),
         ]),
         ("DPI", "speedometer", [("DPI +", .dpi(1)), ("DPI −", .dpi(2))]),
     ]
@@ -159,21 +184,21 @@ struct ActionEditor: View {
     var body: some View {
         Form {
             SwiftUI.Section {
-                LabeledContent("Сейчас") {
+                LabeledContent("Current") {
                     Text(current?.title(for: button.id, layer: layer) ?? "—").fontWeight(.semibold)
                 }
-                LabeledContent("Заводское") {
+                LabeledContent("Factory") {
                     Text(factory.title(for: button.id, layer: layer)).foregroundStyle(.secondary)
                 }
             } header: {
                 Text(button.name).font(.title2.bold()).foregroundStyle(.primary)
-                    + Text(layer == .hypershift ? "  · Hypershift" : "").foregroundStyle(.secondary)
+                    + Text(verbatim: layer == .hypershift ? "  · Hypershift" : "").foregroundStyle(.secondary)
             }
 
-            ForEach(presets, id: \.0) { title, icon, items in
+            ForEach(presets, id: \.1) { title, icon, items in
                 SwiftUI.Section {
                     FlowLayout(spacing: 8) {
-                        ForEach(items, id: \.0) { label, action in
+                        ForEach(items, id: \.1) { label, action in
                             Button(label) { store.setAction(action, button: button.id, layer: layer) }
                                 .buttonStyle(PresetButtonStyle(active: current == action))
                         }
@@ -181,7 +206,7 @@ struct ActionEditor: View {
                 } header: { Label(title, systemImage: icon) }
             }
 
-            SwiftUI.Section("Своё сочетание клавиш") {
+            SwiftUI.Section("Custom shortcut") {
                 KeyRecorder { mods, key in
                     store.setAction(.keyboard(modifiers: mods, key: key), button: button.id, layer: layer)
                 }
@@ -189,14 +214,14 @@ struct ActionEditor: View {
 
             SwiftUI.Section {
                 HStack {
-                    Button("Вернуть заводское") { store.setAction(factory, button: button.id, layer: layer) }
+                    Button("Restore factory") { store.setAction(factory, button: button.id, layer: layer) }
                         .disabled(current == factory)
-                    Button("Отключить кнопку", role: .destructive) { store.setAction(.disabled, button: button.id, layer: layer) }
+                    Button("Disable button", role: .destructive) { store.setAction(.disabled, button: button.id, layer: layer) }
                         .disabled(current == .disabled || button.id == ButtonID.left)
                 }
             } footer: {
                 if button.id == ButtonID.left {
-                    Text("Левую кнопку отключить нельзя — иначе можно остаться без клика.").font(.caption)
+                    Text("The left button can’t be disabled — you could end up without a click.").font(.caption)
                 }
             }
         }
@@ -225,12 +250,12 @@ struct KeyRecorder: View {
 
     var body: some View {
         HStack {
-            Button(recording ? "Нажмите сочетание…" : "Записать сочетание") {
+            Button(recording ? LocalizedStringKey("Press a shortcut…") : "Record shortcut") {
                 recording ? stop() : start()
             }
             .buttonStyle(.borderedProminent)
             .tint(recording ? .orange : .accentColor)
-            if recording { Button("Отмена") { stop() } }
+            if recording { Button("Cancel") { stop() } }
             if let hint { Text(hint).foregroundStyle(.secondary).font(.caption) }
         }
         .onDisappear { stop() }
@@ -241,7 +266,7 @@ struct KeyRecorder: View {
         recording = true
         monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
             guard let key = HIDKeys.key(virtualKeyCode: event.keyCode) else {
-                hint = "Эта клавиша не поддерживается"
+                hint = String(localized: "This key isn’t supported")
                 return nil
             }
             let f = event.modifierFlags
@@ -251,7 +276,8 @@ struct KeyRecorder: View {
             if f.contains(.option) { mods |= HIDKeys.modAlt }
             if f.contains(.command) { mods |= HIDKeys.modCmd }
             onRecord(mods, key.hid)
-            hint = "Назначено: " + HIDKeys.describe(modifiers: mods, key: key.hid)
+            let keys = HIDKeys.describe(modifiers: mods, key: key.hid)
+            hint = String(localized: "Assigned: \(keys)")
             stop()
             return nil
         }

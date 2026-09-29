@@ -18,16 +18,16 @@ struct PerformanceView: View {
                         .contentTransition(.numericText())
                     Text("DPI").font(.title3).foregroundStyle(.secondary)
                     Spacer()
-                    Text("стадия \(store.dpi.active) из \(store.dpi.stages.count)").foregroundStyle(.secondary)
+                    Text("Stage \(store.dpi.active) of \(store.dpi.stages.count)").foregroundStyle(.secondary)
                 }
                 .animation(.snappy, value: store.currentDPI)
             } header: {
-                Text("Сейчас")
+                Text("Now")
             }
 
-            SwiftUI.Section("Частота опроса") {
-                Picker("Частота опроса", selection: Binding(get: { store.polling }, set: { store.setPolling($0) })) {
-                    ForEach(PollingRate.allCases) { Text("\($0.hz) Гц").tag($0) }
+            SwiftUI.Section("Polling rate") {
+                Picker("Polling rate", selection: Binding(get: { store.polling }, set: { store.setPolling($0) })) {
+                    ForEach(PollingRate.allCases) { Text("\($0.hz) Hz").tag($0) }
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
@@ -38,13 +38,13 @@ struct PerformanceView: View {
                     DPIStageRow(index: i, splitXY: splitXY)
                 }
                 HStack {
-                    Button("Добавить стадию", systemImage: "plus") {
+                    Button("Add stage", systemImage: "plus") {
                         var d = store.dpi
                         d.stages.append(d.stages.last ?? DPIStage(x: 1600, y: 1600))
                         store.setDPI(d)
                     }
                     .disabled(store.dpi.stages.count >= 5)
-                    Button("Удалить последнюю", systemImage: "minus") {
+                    Button("Remove last", systemImage: "minus") {
                         var d = store.dpi
                         d.stages.removeLast()
                         d.active = min(d.active, d.stages.count)
@@ -52,12 +52,12 @@ struct PerformanceView: View {
                     }
                     .disabled(store.dpi.stages.count <= 1)
                     Spacer()
-                    Toggle("Раздельно X/Y", isOn: $splitXY)
+                    Toggle("Separate X/Y", isOn: $splitXY)
                 }
             } header: {
-                Text("Стадии DPI")
+                Text("DPI stages")
             } footer: {
-                Text("Кнопки DPI ± переключают стадии по кругу. Выбранная стадия применяется сразу.")
+                Text("The DPI ± buttons cycle through the stages. The selected stage applies immediately.")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
@@ -84,8 +84,8 @@ struct DPIStageRow: View {
                         .foregroundStyle(isActive ? Color.accentColor : Color.secondary)
                 }
                 .buttonStyle(.plain)
-                .help("Сделать активной")
-                Text("Стадия \(index + 1)").fontWeight(isActive ? .semibold : .regular)
+                .help("Make active")
+                Text("Stage \(index + 1)").fontWeight(isActive ? .semibold : .regular)
                 Spacer()
                 Text(verbatim: splitXY ? "\(stage.x) × \(stage.y)" : "\(stage.x) DPI").monospacedDigit().foregroundStyle(.secondary)
             }
@@ -124,13 +124,13 @@ enum EffectKind: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .off: return "Выключено"
-        case .staticColor: return "Статичный цвет"
-        case .breathing: return "Дыхание"
-        case .breathingDual: return "Дыхание, 2 цвета"
-        case .breathingRandom: return "Дыхание, случайные"
-        case .spectrum: return "Спектр"
-        case .reactive: return "Реакция на нажатие"
+        case .off: return String(localized: "Off")
+        case .staticColor: return String(localized: "Static color")
+        case .breathing: return String(localized: "Breathing")
+        case .breathingDual: return String(localized: "Breathing, 2 colors")
+        case .breathingRandom: return String(localized: "Breathing, random")
+        case .spectrum: return String(localized: "Spectrum")
+        case .reactive: return String(localized: "Reactive")
         }
     }
 
@@ -187,10 +187,10 @@ struct LightingView: View {
     var body: some View {
         Form {
             SwiftUI.Section {
-                Toggle("Одинаково для всех зон", isOn: $sync)
+                Toggle("Same for all zones", isOn: $sync)
             }
             if sync {
-                ZoneEditor(title: "Все зоны", state: store.zones[.logo] ?? ZoneState()) { store.setAllZones($0) }
+                ZoneEditor(title: String(localized: "All zones"), state: store.zones[.logo] ?? ZoneState()) { store.setAllZones($0) }
             } else {
                 ForEach(LEDZone.allCases) { z in
                     ZoneEditor(title: z.title, state: store.zones[z] ?? ZoneState()) { store.setZone(z, $0) }
@@ -210,31 +210,31 @@ struct ZoneEditor: View {
         let kind = EffectKind(state.effect)
         let (c1, c2) = state.effect.colors
         SwiftUI.Section(title) {
-            Picker("Эффект", selection: Binding(get: { kind }, set: { apply($0, c1, c2, state.effect.speed) })) {
+            Picker("Effect", selection: Binding(get: { kind }, set: { apply($0, c1, c2, state.effect.speed) })) {
                 ForEach(EffectKind.allCases) { Text($0.title).tag($0) }
             }
             if [.staticColor, .breathing, .breathingDual, .reactive].contains(kind) {
-                ColorPicker(kind == .breathingDual ? "Цвет 1" : "Цвет",
+                ColorPicker(kind == .breathingDual ? LocalizedStringKey("Color 1") : "Color",
                             selection: Binding(get: { c1.color }, set: { apply(kind, RGB($0), c2, state.effect.speed) }),
                             supportsOpacity: false)
             }
             if kind == .breathingDual {
-                ColorPicker("Цвет 2", selection: Binding(get: { c2.color }, set: { apply(kind, c1, RGB($0), state.effect.speed) }),
+                ColorPicker("Color 2", selection: Binding(get: { c2.color }, set: { apply(kind, c1, RGB($0), state.effect.speed) }),
                             supportsOpacity: false)
             }
             if kind == .reactive {
-                Picker("Длительность", selection: Binding(get: { state.effect.speed }, set: { apply(kind, c1, c2, $0) })) {
-                    Text("Короткая").tag(UInt8(1)); Text("Средняя").tag(UInt8(2))
-                    Text("Длинная").tag(UInt8(3)); Text("Очень длинная").tag(UInt8(4))
+                Picker("Duration", selection: Binding(get: { state.effect.speed }, set: { apply(kind, c1, c2, $0) })) {
+                    Text("Short").tag(UInt8(1)); Text("Medium").tag(UInt8(2))
+                    Text("Long").tag(UInt8(3)); Text("Very long").tag(UInt8(4))
                 }
             }
             if kind != .off {
-                LabeledContent("Яркость") {
+                LabeledContent("Brightness") {
                     HStack {
                         Slider(value: Binding(get: { state.brightness }, set: {
                             var s = state; s.brightness = $0; onChange(s)
                         }), in: 0...255)
-                        Text("\(Int(state.brightness / 2.55))%").monospacedDigit().frame(width: 40, alignment: .trailing)
+                        Text(verbatim: "\(Int(state.brightness / 2.55))%").monospacedDigit().frame(width: 40, alignment: .trailing)
                     }
                 }
             }
@@ -256,17 +256,17 @@ struct DeviceView: View {
 
     var body: some View {
         Form {
-            SwiftUI.Section("Устройство") {
-                LabeledContent("Модель", value: "Razer Naga Trinity (RZ01-0241)")
+            SwiftUI.Section("Device") {
+                LabeledContent("Model", value: "Razer Naga Trinity (RZ01-0241)")
                 LabeledContent("USB", value: "1532:0067")
-                LabeledContent("Прошивка", value: store.info?.firmware ?? "—")
-                LabeledContent("Серийный номер", value: store.info?.serial ?? "—")
+                LabeledContent("Firmware", value: store.info?.firmware ?? "—")
+                LabeledContent("Serial number", value: store.info?.serial ?? "—")
             }
             SwiftUI.Section {
-                Button("Перечитать настройки с мыши") { Task { await store.reload() } }
-                Button("Сбросить все кнопки к заводским", role: .destructive) { store.resetAllButtons() }
+                Button("Reload settings from mouse") { Task { await store.reload() } }
+                Button("Reset all buttons to factory defaults", role: .destructive) { store.resetAllButtons() }
             } footer: {
-                Text("Все изменения применяются сразу и сохраняются в памяти мыши — работают и без этой программы.")
+                Text("All changes apply immediately and are stored in the mouse — they keep working without this app.")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }

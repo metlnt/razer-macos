@@ -9,11 +9,11 @@ public enum RazerError: LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .io(let msg): return "Ошибка HID: \(msg)"
+        case .io(let msg): return String(localized: "HID error: \(msg)")
         case .status(let s, let c, let i):
             let name = [0x03: "fail", 0x04: "timeout", 0x05: "not supported"][Int(s)] ?? String(format: "0x%02x", s)
-            return String(format: "Команда %02X:%02X отклонена (%@)", c, i, name)
-        case .noResponse(let c, let i): return String(format: "Нет ответа на %02X:%02X", c, i)
+            return String(format: String(localized: "Command %02X:%02X rejected (%@)"), c, i, name)
+        case .noResponse(let c, let i): return String(format: String(localized: "No response to %02X:%02X"), c, i)
         }
     }
 }
@@ -30,12 +30,12 @@ public final class USBTransport {
             withVendorID: DeviceMonitor.vendorID as NSNumber, productID: DeviceMonitor.productID as NSNumber,
             bcdDevice: nil, deviceClass: nil, deviceSubclass: nil, deviceProtocol: nil, speed: nil, productIDArray: nil)
         let service = IOServiceGetMatchingService(kIOMainPortDefault, match.takeRetainedValue())
-        guard service != 0 else { throw RazerError.io("USB-устройство не найдено") }
+        guard service != 0 else { throw RazerError.io(String(localized: "USB device not found")) }
         defer { IOObjectRelease(service) }
         do {
             device = try IOUSBHostDevice(__ioService: service, options: [], queue: nil, interestHandler: nil)
         } catch {
-            throw RazerError.io("не удалось открыть USB: \(error.localizedDescription)")
+            throw RazerError.io(String(localized: "couldn’t open USB: \(error.localizedDescription)"))
         }
     }
 

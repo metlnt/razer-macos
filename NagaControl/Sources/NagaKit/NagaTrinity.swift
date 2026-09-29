@@ -13,9 +13,9 @@ public enum LEDZone: UInt8, CaseIterable, Identifiable {
     public var id: UInt8 { rawValue }
     public var title: String {
         switch self {
-        case .scrollWheel: return "Колесо"
-        case .logo: return "Логотип"
-        case .sidePanel: return "Боковая панель"
+        case .scrollWheel: return String(localized: "Scroll wheel")
+        case .logo: return String(localized: "Logo")
+        case .sidePanel: return String(localized: "Side panel")
         }
     }
 }

@@ -28,10 +28,10 @@ enum Section: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .buttons: return "Кнопки"
-        case .performance: return "DPI и опрос"
-        case .lighting: return "Подсветка"
-        case .device: return "Устройство"
+        case .buttons: return String(localized: "Buttons")
+        case .performance: return String(localized: "DPI & Polling")
+        case .lighting: return String(localized: "Lighting")
+        case .device: return String(localized: "Device")
         }
     }
     var icon: String {
@@ -59,15 +59,15 @@ struct ContentView: View {
             Group {
                 switch store.status {
                 case .searching:
-                    ContentUnavailableView("Мышь не найдена", systemImage: "cable.connector",
-                                           description: Text("Подключите Razer Naga Trinity по USB."))
+                    ContentUnavailableView("Mouse not found", systemImage: "cable.connector",
+                                           description: Text("Connect your Razer Naga Trinity via USB."))
                 case .loading where store.info == nil:
-                    ProgressView("Читаю настройки мыши…")
+                    ProgressView("Reading mouse settings…")
                 case .error(let msg) where store.info == nil:
                     ContentUnavailableView {
-                        Label("Ошибка связи", systemImage: "exclamationmark.triangle")
+                        Label("Connection error", systemImage: "exclamationmark.triangle")
                     } description: { Text(msg) } actions: {
-                        Button("Повторить") { store.connect() }
+                        Button("Retry") { store.connect() }
                     }
                 default:
                     switch section ?? .buttons {
@@ -118,10 +118,10 @@ struct StatusBadge: View {
 
     private var label: String {
         switch store.status {
-        case .ready: return "Подключена"
-        case .loading: return "Чтение…"
-        case .searching: return "Не подключена"
-        case .error: return "Ошибка"
+        case .ready: return String(localized: "Connected")
+        case .loading: return String(localized: "Reading…")
+        case .searching: return String(localized: "Not connected")
+        case .error: return String(localized: "Error")
         }
     }
 }
