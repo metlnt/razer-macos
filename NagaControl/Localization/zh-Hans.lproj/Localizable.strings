@@ -131,6 +131,8 @@
 "System" = "系统";
 "Back  ⌘[" = "后退  ⌘[";
 "Forward  ⌘]" = "前进  ⌘]";
+"Open in new tab" = "在新标签页中打开";
+"Middle click (new tab)" = "中键单击（新标签页）";
 "Mouse button 4" = "鼠标按键 4";
 "Mouse button 5" = "鼠标按键 5";
 "Scroll ↑" = "滚动 ↑";

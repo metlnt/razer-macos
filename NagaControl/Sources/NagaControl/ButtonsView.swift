@@ -53,7 +53,7 @@ extension ButtonAction {
             switch b {
             case 1: return String(localized: "Left click")
             case 2: return String(localized: "Right click")
-            case 3: return String(localized: "Middle click")
+            case 3: return String(localized: "Middle click (new tab)")
             case 4: return String(localized: "Mouse button 4 (back)")
             case 5: return String(localized: "Mouse button 5 (forward)")
             case 9: return String(localized: "Scroll up")
@@ -161,6 +161,7 @@ struct ActionEditor: View {
     private let presets: [(LocalizedStringKey, String, [(LocalizedStringKey, ButtonAction)])] = [
         ("Browser", "globe", [
             ("Back  ⌘[", .browserBack), ("Forward  ⌘]", .browserForward),
+            ("Open in new tab", .mouse(3)),
             ("Mouse button 4", .mouse(4)), ("Mouse button 5", .mouse(5)),
         ]),
         ("Mouse", "computermouse", [

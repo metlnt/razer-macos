@@ -171,6 +171,8 @@ T = [
 ("System", "Система", "Система", "System", "Sistema", "Système", "系统"),
 ("Back  ⌘[", "Назад  ⌘[", "Назад  ⌘[", "Zurück  ⌘[", "Atrás  ⌘[", "Précédent  ⌘[", "后退  ⌘["),
 ("Forward  ⌘]", "Вперёд  ⌘]", "Вперед  ⌘]", "Vor  ⌘]", "Adelante  ⌘]", "Suivant  ⌘]", "前进  ⌘]"),
+("Open in new tab", "Открыть в новой вкладке", "Відкрити в новій вкладці", "In neuem Tab öffnen", "Abrir en pestaña nueva", "Ouvrir dans un nouvel onglet", "在新标签页中打开"),
+("Middle click (new tab)", "Средний клик (новая вкладка)", "Середній клік (нова вкладка)", "Mittelklick (neuer Tab)", "Clic central (pestaña nueva)", "Clic milieu (nouvel onglet)", "中键单击（新标签页）"),
 ("Mouse button 4", "Кнопка мыши 4", "Кнопка миші 4", "Maustaste 4", "Botón 4", "Bouton 4", "鼠标按键 4"),
 ("Mouse button 5", "Кнопка мыши 5", "Кнопка миші 5", "Maustaste 5", "Botón 5", "Bouton 5", "鼠标按键 5"),
 ("Scroll ↑", "Прокрутка ↑", "Прокрутка ↑", "Scrollen ↑", "Desplazar ↑", "Défiler ↑", "滚动 ↑"),

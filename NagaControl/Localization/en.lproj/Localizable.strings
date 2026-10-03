@@ -131,6 +131,8 @@
 "System" = "System";
 "Back  ⌘[" = "Back  ⌘[";
 "Forward  ⌘]" = "Forward  ⌘]";
+"Open in new tab" = "Open in new tab";
+"Middle click (new tab)" = "Middle click (new tab)";
 "Mouse button 4" = "Mouse button 4";
 "Mouse button 5" = "Mouse button 5";
 "Scroll ↑" = "Scroll ↑";

@@ -131,6 +131,8 @@
 "System" = "Sistema";
 "Back  ⌘[" = "Atrás  ⌘[";
 "Forward  ⌘]" = "Adelante  ⌘]";
+"Open in new tab" = "Abrir en pestaña nueva";
+"Middle click (new tab)" = "Clic central (pestaña nueva)";
 "Mouse button 4" = "Botón 4";
 "Mouse button 5" = "Botón 5";
 "Scroll ↑" = "Desplazar ↑";
